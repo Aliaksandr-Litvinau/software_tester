@@ -1,23 +1,9 @@
 import uuid
-from unittest.mock import MagicMock
 
 import pytest
-from lamb.db import DeclarativeBase
 from lamb.exc import InvalidParamValueError
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from api.models import AbstractUser, ExchangeRatesRecord, RefreshToken, SuperAdmin, UserType, Operator
-
-
-@pytest.fixture(scope="module")
-def db_session():
-    engine = create_engine("postgresql://app_user:password@localhost/app_core")
-    DeclarativeBase.metadata.create_all(engine)
-    session = sessionmaker(bind=engine)
-    session = session()
-    yield session
-    session.close()
 
 
 def test_abstract_user_set_password(db_session, mocker):
@@ -114,4 +100,3 @@ def test_exchange_rates_record_creation(db_session):
     assert exchange_rate.actor_id == user.user_id
     assert exchange_rate.rate == 1.5
     assert exchange_rate.rate != 3.0
-

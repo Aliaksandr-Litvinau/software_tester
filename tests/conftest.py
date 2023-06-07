@@ -1,19 +1,18 @@
-import uuid
 import importlib
-
-from django.conf import settings
-from django.core.management import call_command
-
-# SQLAlchemy
-from sqlalchemy_utils import drop_database, create_database, database_exists
 
 # Lamb Framework
 import lamb.db.session
-from lamb.db.session import metadata, lamb_db_session_maker
-
 import pytest
+from django.conf import settings
+from django.core.management import call_command
+from lamb.db import DeclarativeBase
+from lamb.db.session import metadata, lamb_db_session_maker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+# SQLAlchemy
+from sqlalchemy_utils import drop_database, create_database, database_exists
 
-from .factories import *
+from tests.factories import AlchemyModelFactory
 
 
 @pytest.fixture
@@ -40,3 +39,13 @@ def db():
     yield session
     session.rollback()
     drop_database(db_url)
+
+
+@pytest.fixture(scope="module")
+def db_session():
+    engine = create_engine("postgresql://app_user:password@localhost/app_core")
+    DeclarativeBase.metadata.create_all(engine)
+    session = sessionmaker(bind=engine)
+    session = session()
+    yield session
+    session.close()
